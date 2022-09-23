@@ -9,6 +9,8 @@
 #include <MQTTClient.h>
 #include <ArduinoJson.h>
 
+#include "states.h"
+
 #ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
 #endif
@@ -17,7 +19,7 @@
 #endif
 
 void renderTemp(float temp);
-void renderWifiStatus(bool connected);
+void blinkConnectionStatus(const char *service, const char *status);
 float readTemp();
 void publishTemp(float temp);
 void publishDiscovery();
