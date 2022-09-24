@@ -14,7 +14,7 @@ All you need to do is have an MQTT Broker available (I use the mosquito add-on f
 
 
 ## License
-MIT style, see LICENSE.md file
+MIT style, see [LICENSE.md] file
 
 
 ## Links
