@@ -21,4 +21,5 @@ MIT style, see LICENSE.md file
 * Author [Peter Petermann](https://devedge.eu)
 * Framework used [PlatformIO](https://platformio.org/)
 * Development Board [01Space/ESP32-C3-0.42LCD](https://github.com/01Space/ESP32-C3-0.42LCD) - [Buy Here](https://www.banggood.com/custlink/DmvcV3BiwP)
-* Sensor [DHT11](https://components101.com/sensors/dht11-temperature-sensor) 
+* Sensor [DHT11](https://components101.com/sensors/dht11-temperature-sensor)
+* [Home Assistant](https://www.home-assistant.io/)
