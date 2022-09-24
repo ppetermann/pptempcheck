@@ -2,11 +2,11 @@
 #ifndef PPTEMPCHECK_CONFIG_H
 #define PPTEMPCHECK_CONFIG_H
 
-// display
+// display (probably don't change)
 #define SDA_PIN 5
 #define SCL_PIN 6
 
-// dht sensor
+// dht sensor (pick pin here, DHT22 sensor untested)
 #define DHTPIN 20
 #define DHTTYPE DHT11
 
@@ -19,11 +19,15 @@
 #define MQTT_BROKER_PORT 1883
 #define MQTT_USER "mqtt"
 #define MQTT_PASS "password"
-#define MQTT_NAME "sensorBedroom"
+
+#define MQTT_NAME "sensorBedroom" // don't go much longer
 #define MQTT_CLIENT_ID MQTT_NAME
 
 #define MQTT_DISCOVER "homeassistant/sensor/sensorBedroom/config"
 #define MQTT_TOPIC "homeassistant/sensor/sensorBedroom/state"
 
+// turning this to false will stop rendering the temperature on this display
+// the display will still flash status messages when needed, but will be dark when not in the process of connecting
+#define DISPLAY_SHOW_TEMP true
 
 #endif //PPTEMPCHECK_CONFIG_H

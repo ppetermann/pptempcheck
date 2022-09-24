@@ -59,7 +59,7 @@ bool ensureMQTT() {
         i++;
     }
 
-    if (i < 20 ) {
+    if (i < 20) {
         blinkConnectionStatus(CONN_SERVICE_MQTT, CONN_STATE_CONNECTED);
         delay(500);
         publishDiscovery();
@@ -91,11 +91,14 @@ bool ensureWifi() {
 }
 
 void loop() {
-    if(ensureWifi() && ensureMQTT()) {
+    if (ensureWifi() && ensureMQTT()) {
         floatTempInC = readTemp();
         mqttClient.loop();
         publishTemp(floatTempInC);
-        renderTemp(floatTempInC);
+
+        if (DISPLAY_SHOW_TEMP) {
+            renderTemp(floatTempInC);
+        }
     }
     delay(10000);
 }
@@ -160,7 +163,7 @@ void publishTemp(float temp) {
     char localDoc[200];
     doc.clear();
 
-    doc["temperature"] = (int)(temp * 100 + 0.5) / 100.0; // NOLINT(bugprone-incorrect-roundings)
+    doc["temperature"] = (int) (temp * 100 + 0.5) / 100.0; // NOLINT(bugprone-incorrect-roundings)
     serializeJson(doc, localDoc);
 
     mqttClient.publish(MQTT_TOPIC, localDoc);
