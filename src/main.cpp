@@ -20,10 +20,6 @@ StaticJsonDocument<200> doc;
 float floatTempInC = -1;
 float previousTemp = -1;
 
-bool ensureWifi();
-
-bool ensureMQTT();
-
 // setup
 void setup() {
     Wire.begin(SDA_PIN, SCL_PIN);

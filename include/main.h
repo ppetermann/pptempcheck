@@ -18,10 +18,12 @@
 #include <Wire.h>
 #endif
 
-void renderTemp(float temp);
 void blinkConnectionStatus(const char *service, const char *status);
+bool ensureWifi();
+bool ensureMQTT();
 float readTemp();
-void publishTemp(float temp);
+void renderTemp(float temp);
 void publishDiscovery();
+void publishTemp(float temp);
 
 #endif //PPTEMPCHECK_MAIN_H
