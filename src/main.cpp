@@ -12,6 +12,7 @@ WiFiClient wifiClient;
 
 // mqtt
 MQTTClient mqttClient(256);
+MQTTPublisher mqttPublisher(mqttClient);
 
 // Json Doc
 StaticJsonDocument<200> doc;
@@ -20,8 +21,20 @@ StaticJsonDocument<200> doc;
 float floatTempInC = -1;
 float previousTemp = -1;
 
-// setup
+WifiStatus wifiStatus;
+
+/**
+ * success callback for mqtt connection success
+ */
+void mqttSuccess() {mqttPublisher.publishDiscovery();}
+MQTTStatus mqttStatus(mqttClient, mqttSuccess);
+
+
+/**
+ * Setup
+ */
 void setup() {
+    Serial.begin(115200);
     Wire.begin(SDA_PIN, SCL_PIN);
 
     u8g2.begin();
@@ -29,22 +42,28 @@ void setup() {
 
     dht.begin();
 
+    Serial.println("Setup Wifi");
     // wifi
     WiFi.begin(WIFI_SSID, WIFI_PASS);
-    ensureWifi();
+    ensureStatus(wifiStatus);
 
+    Serial.println("Setup MQTT");
     // mqtt
     mqttClient.begin(MQTT_BROKER_HOST, MQTT_BROKER_PORT, wifiClient);
-    ensureMQTT();
+    ensureStatus(mqttStatus);
 
+    Serial.println("Setup done");
     delay(500);
 }
 
+/**
+ * Main Loop
+ */
 void loop() {
-    if (ensureWifi() && ensureMQTT()) {
+    if (ensureStatus(wifiStatus) && ensureStatus(mqttStatus)) {
         floatTempInC = readTemp();
         mqttClient.loop();
-        publishTemp(floatTempInC);
+        mqttPublisher.publishTemp(floatTempInC);
 
         if (DISPLAY_SHOW_TEMP) {
             renderTemp(floatTempInC);
@@ -53,7 +72,11 @@ void loop() {
     delay(10000);
 }
 
-
+/**
+ * blink a connection status (states.h)
+ * @param service
+ * @param status
+ */
 void blinkConnectionStatus(const char *service, const char *status) {
     u8g2.clearBuffer();
     u8g2.drawStr(0, 10, service);
@@ -69,53 +92,38 @@ void blinkConnectionStatus(const char *service, const char *status) {
     u8g2.clearDisplay();
 }
 
-bool ensureMQTT() {
-    // all good if connected
-    if (mqttClient.connected()) {
+/**
+ * will run connection check + reconnect for StatusWrapper
+ * @return bool
+ */
+bool ensureStatus(StatusWrapper &status) {
+    if (status.isConnected()) {
         return true;
     }
 
-    // connect
-    mqttClient.connect(MQTT_CLIENT_ID, MQTT_USER, MQTT_PASS);
+    status.connect();
 
     int i = 0;
-    while (!mqttClient.connected() && i < 20) {
-        blinkConnectionStatus(CONN_SERVICE_MQTT, CONN_STATE_CONNECTING);
+    while (status.wait() && i < 20) {
+        blinkConnectionStatus(status.getServiceName(), CONN_STATE_CONNECTING);
         i++;
     }
 
     if (i < 20) {
-        blinkConnectionStatus(CONN_SERVICE_MQTT, CONN_STATE_CONNECTED);
+        blinkConnectionStatus(status.getServiceName(), CONN_STATE_CONNECTED);
+        status.success();
         delay(500);
-        publishDiscovery();
         return true;
     }
-    blinkConnectionStatus(CONN_SERVICE_MQTT, CONN_STATE_FAILED);
+    blinkConnectionStatus(status.getServiceName(), CONN_STATE_FAILED);
     delay(500);
     return false;
 }
 
-bool ensureWifi() {
-    // all good if connected
-    if (WiFi.isConnected()) {
-        return true;
-    }
-    // initiate reconnect
-    WiFi.reconnect();
-    int i = 0;
-    while (WiFiClass::status() != WL_CONNECTED && i < 30) {
-        blinkConnectionStatus(CONN_SERVICE_WIFI, CONN_STATE_CONNECTING);
-        i++;
-    }
-    if (i < 30) {
-        blinkConnectionStatus(CONN_SERVICE_WIFI, CONN_STATE_CONNECTED);
-        return true;
-    }
-    blinkConnectionStatus(CONN_SERVICE_WIFI, CONN_STATE_FAILED);
-    return false;
-}
-
-
+/**
+ * read temp from dht sensor
+ * @return
+ */
 float readTemp() {
     float t = dht.readTemperature();
 
@@ -131,6 +139,10 @@ float readTemp() {
     return t;
 }
 
+/**
+ * render temp on display
+ * @param temp
+ */
 void renderTemp(float temp) {
     char strTempInC[7];
     dtostrf(temp, 5, 2, strTempInC);
@@ -141,27 +153,3 @@ void renderTemp(float temp) {
     u8g2.sendBuffer();
 }
 
-void publishDiscovery() {
-    char localDoc[200];
-    doc.clear();
-
-    doc["name"] = MQTT_NAME;
-    doc["uniq_id"] = MQTT_CLIENT_ID;
-    doc["dev_cla"] = "temperature";
-    doc["stat_t"] = MQTT_TOPIC;
-    doc["unit_of_meas"] = "°C";
-    doc["val_tpl"] = "{{ value_json.temperature }}";
-    serializeJson(doc, localDoc);
-
-    mqttClient.publish(MQTT_DISCOVER, localDoc);
-}
-
-void publishTemp(float temp) {
-    char localDoc[200];
-    doc.clear();
-
-    doc["temperature"] = (int) (temp * 100 + 0.5) / 100.0; // NOLINT(bugprone-incorrect-roundings)
-    serializeJson(doc, localDoc);
-
-    mqttClient.publish(MQTT_TOPIC, localDoc);
-}

@@ -7,9 +7,13 @@
 #include <DHT.h>
 #include <WiFi.h>
 #include <MQTTClient.h>
+#include <MQTTPublisher.h>
 #include <ArduinoJson.h>
 
 #include "states.h"
+#include "WifiStatus.h"
+#include "MQTTStatus.h"
+
 
 #ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
@@ -21,9 +25,9 @@
 void blinkConnectionStatus(const char *service, const char *status);
 bool ensureWifi();
 bool ensureMQTT();
+bool ensureStatus(StatusWrapper &status);
 float readTemp();
 void renderTemp(float temp);
-void publishDiscovery();
-void publishTemp(float temp);
+
 
 #endif //PPTEMPCHECK_MAIN_H
