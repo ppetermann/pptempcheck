@@ -27,7 +27,10 @@ bool ensureMQTT();
 // setup
 void setup() {
     Wire.begin(SDA_PIN, SCL_PIN);
+
     u8g2.begin();
+    u8g2.setFont(u8g2_font_ncenB08_tr);
+
     dht.begin();
 
     // wifi
@@ -50,7 +53,6 @@ bool ensureMQTT() {
     // connect
     mqttClient.connect(MQTT_CLIENT_ID, MQTT_USER, MQTT_PASS);
 
-    // @todo secondary exit, so we can fall back to reconnecting wifi if necessary
     int i = 0;
     while (!mqttClient.connected() && i < 20) {
         blinkConnectionStatus(CONN_SERVICE_MQTT, CONN_STATE_CONNECTING);
@@ -90,7 +92,6 @@ bool ensureWifi() {
 
 void loop() {
     if(ensureWifi() && ensureMQTT()) {
-        u8g2.clearDisplay();
         floatTempInC = readTemp();
         mqttClient.loop();
         publishTemp(floatTempInC);
@@ -100,16 +101,17 @@ void loop() {
 }
 
 void blinkConnectionStatus(const char *service, const char *status) {
-    u8g2.clearBuffer();                    // clear the internal memory
-    u8g2.setFont(u8g2_font_ncenB08_tr);    // choose a suitable font
+    u8g2.clearBuffer();
     u8g2.drawStr(0, 10, service);
-    u8g2.drawStr(0, 20, status);    // write something to the internal memory
-    u8g2.sendBuffer();                    // transfer internal memory to the display
+    u8g2.drawStr(0, 20, status);
+    u8g2.sendBuffer();
     delay(500);
-    u8g2.clearDisplay();
+
+    u8g2.clearBuffer();
     u8g2.drawStr(0, 10, service);
     u8g2.sendBuffer();
     delay(500);
+
     u8g2.clearDisplay();
 }
 
@@ -118,7 +120,6 @@ void renderTemp(float temp) {
     char strTempInC[7];
     dtostrf(temp, 5, 2, strTempInC);
     u8g2.clearBuffer();
-    u8g2.setFont(u8g2_font_ncenB08_tr);
     u8g2.drawStr(0, 10, "Temperature");
     u8g2.drawStr(0, 20, strTempInC);
     u8g2.drawStr(32, 20, "C");
