@@ -35,7 +35,7 @@ void setup() {
     ensureWifi();
 
     // mqtt
-    mqttClient.begin(MQTT_BROKER_HOST, wifiClient);
+    mqttClient.begin(MQTT_BROKER_HOST, MQTT_BROKER_PORT, wifiClient);
     ensureMQTT();
 
     delay(500);
