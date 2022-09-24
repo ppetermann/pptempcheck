@@ -40,6 +40,35 @@ void setup() {
     delay(500);
 }
 
+void loop() {
+    if (ensureWifi() && ensureMQTT()) {
+        floatTempInC = readTemp();
+        mqttClient.loop();
+        publishTemp(floatTempInC);
+
+        if (DISPLAY_SHOW_TEMP) {
+            renderTemp(floatTempInC);
+        }
+    }
+    delay(10000);
+}
+
+
+void blinkConnectionStatus(const char *service, const char *status) {
+    u8g2.clearBuffer();
+    u8g2.drawStr(0, 10, service);
+    u8g2.drawStr(0, 20, status);
+    u8g2.sendBuffer();
+    delay(500);
+
+    u8g2.clearBuffer();
+    u8g2.drawStr(0, 10, service);
+    u8g2.sendBuffer();
+    delay(500);
+
+    u8g2.clearDisplay();
+}
+
 bool ensureMQTT() {
     // all good if connected
     if (mqttClient.connected()) {
@@ -86,44 +115,6 @@ bool ensureWifi() {
     return false;
 }
 
-void loop() {
-    if (ensureWifi() && ensureMQTT()) {
-        floatTempInC = readTemp();
-        mqttClient.loop();
-        publishTemp(floatTempInC);
-
-        if (DISPLAY_SHOW_TEMP) {
-            renderTemp(floatTempInC);
-        }
-    }
-    delay(10000);
-}
-
-void blinkConnectionStatus(const char *service, const char *status) {
-    u8g2.clearBuffer();
-    u8g2.drawStr(0, 10, service);
-    u8g2.drawStr(0, 20, status);
-    u8g2.sendBuffer();
-    delay(500);
-
-    u8g2.clearBuffer();
-    u8g2.drawStr(0, 10, service);
-    u8g2.sendBuffer();
-    delay(500);
-
-    u8g2.clearDisplay();
-}
-
-
-void renderTemp(float temp) {
-    char strTempInC[7];
-    dtostrf(temp, 5, 2, strTempInC);
-    u8g2.clearBuffer();
-    u8g2.drawStr(0, 10, "Temperature");
-    u8g2.drawStr(0, 20, strTempInC);
-    u8g2.drawStr(32, 20, "C");
-    u8g2.sendBuffer();
-}
 
 float readTemp() {
     float t = dht.readTemperature();
@@ -138,6 +129,16 @@ float readTemp() {
     }
     previousTemp = t;
     return t;
+}
+
+void renderTemp(float temp) {
+    char strTempInC[7];
+    dtostrf(temp, 5, 2, strTempInC);
+    u8g2.clearBuffer();
+    u8g2.drawStr(0, 10, "Temperature");
+    u8g2.drawStr(0, 20, strTempInC);
+    u8g2.drawStr(32, 20, "C");
+    u8g2.sendBuffer();
 }
 
 void publishDiscovery() {
