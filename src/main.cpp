@@ -17,8 +17,8 @@ MQTTClient mqttClient(256);
 StaticJsonDocument<200> doc;
 
 // global vars + init
-float floatTempInC = -666;
-float previousTemp = -667;
+float floatTempInC = -1;
+float previousTemp = -1;
 
 bool ensureWifi();
 
@@ -73,22 +73,25 @@ bool ensureWifi() {
     if (WiFi.isConnected()) {
         return true;
     }
-    // reconnect
+    // initiate reconnect
     WiFi.reconnect();
-    while (WiFiClass::status() != WL_CONNECTED) {
+    int i = 0;
+    while (WiFiClass::status() != WL_CONNECTED && i < 30) {
         blinkConnectionStatus(CONN_SERVICE_WIFI, CONN_STATE_CONNECTING);
+        i++;
     }
-    blinkConnectionStatus(CONN_SERVICE_WIFI, CONN_STATE_CONNECTED);
-    // @todo add fail
-    return true;
+    if (i < 30) {
+        blinkConnectionStatus(CONN_SERVICE_WIFI, CONN_STATE_CONNECTED);
+        return true;
+    }
+    blinkConnectionStatus(CONN_SERVICE_WIFI, CONN_STATE_FAILED);
+    return false;
 }
 
 void loop() {
-    // we check Wi-Fi, if Wi-Fi gone we wait for it to come back?
     if(ensureWifi() && ensureMQTT()) {
         u8g2.clearDisplay();
         floatTempInC = readTemp();
-        //renderTemp(floatTempInC);
         mqttClient.loop();
         publishTemp(floatTempInC);
         renderTemp(floatTempInC);
@@ -114,11 +117,12 @@ void blinkConnectionStatus(const char *service, const char *status) {
 void renderTemp(float temp) {
     char strTempInC[7];
     dtostrf(temp, 5, 2, strTempInC);
-    u8g2.clearBuffer();                    // clear the internal memory
-    u8g2.setFont(u8g2_font_ncenB08_tr);    // choose a suitable font
-    u8g2.drawStr(0, 10, "Temperature");    // write something to the internal memory
-    u8g2.drawStr(0, 20, strTempInC);    // write something to the internal memory
-    u8g2.sendBuffer();                    // transfer internal memory to the display
+    u8g2.clearBuffer();
+    u8g2.setFont(u8g2_font_ncenB08_tr);
+    u8g2.drawStr(0, 10, "Temperature");
+    u8g2.drawStr(0, 20, strTempInC);
+    u8g2.drawStr(32, 20, "C");
+    u8g2.sendBuffer();
 }
 
 float readTemp() {
@@ -128,7 +132,8 @@ float readTemp() {
     if (isnan(t)) {
         Serial.println(F("Failed to read from DHT sensor!"));
 
-        // use previous reading
+        // use previous reading (sometimes the sensor will give a nan response randomly, this ensures that
+        // the measured temperature doesn't drop wildly each time that happens
         t = previousTemp;
     }
     previousTemp = t;
