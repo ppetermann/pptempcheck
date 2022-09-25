@@ -63,8 +63,8 @@ void setup() {
  */
 void loop() {
     if (ensureStatus(wifiStatus) && ensureStatus(mqttStatus)) {
-        floatTempInC = readTemp();
-        floatHumidity = dht.readHumidity();
+        floatTempInC = readTemperature();
+        floatHumidity = readHumidity();
         mqttClient.loop();
         mqttPublisher.publishTemp(floatTempInC, floatHumidity);
 
@@ -127,7 +127,7 @@ bool ensureStatus(StatusWrapper &status) {
  * read temp from dht sensor
  * @return
  */
-float readTemp() {
+float readTemperature() {
     float t = dht.readTemperature();
 
     if (isnan(t)) {

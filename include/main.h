@@ -24,7 +24,8 @@
 
 void blinkConnectionStatus(const char *service, const char *status);
 bool ensureStatus(StatusWrapper &status);
-float readTemp();
+float readTemperature();
+float readHumidity();
 void renderValues(float temp, float hum);
 
 
