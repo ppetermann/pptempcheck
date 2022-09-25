@@ -11,8 +11,8 @@
 #include <ArduinoJson.h>
 
 #include "states.h"
-#include "WifiStatus.h"
-#include "MQTTStatus.h"
+#include "StatusWrapper/WifiStatus.h"
+#include "StatusWrapper/MQTTStatus.h"
 
 
 #ifdef U8X8_HAVE_HW_SPI

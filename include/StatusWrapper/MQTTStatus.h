@@ -5,7 +5,7 @@
 #ifndef PPTEMPCHECK_MQTTSTATUS_H
 #define PPTEMPCHECK_MQTTSTATUS_H
 
-#include <MQTTClient.h>
+#include "MQTTClient.h"
 
 #include "StatusWrapper.h"
 #include "states.h"

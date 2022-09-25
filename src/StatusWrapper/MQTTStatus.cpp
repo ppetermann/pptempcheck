@@ -1,4 +1,4 @@
-#include "MQTTStatus.h"
+#include "StatusWrapper/MQTTStatus.h"
 
 bool MQTTStatus::isConnected() {
     return mqttClient.connected();

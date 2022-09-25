@@ -2,7 +2,7 @@
 // Created by ppetermann on 24.09.22.
 //
 
-#include "WifiStatus.h"
+#include "StatusWrapper/WifiStatus.h"
 
 bool WifiStatus::isConnected() {
     return WiFi.isConnected();
