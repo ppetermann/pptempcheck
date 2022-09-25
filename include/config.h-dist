@@ -20,11 +20,17 @@
 #define MQTT_USER "mqtt"
 #define MQTT_PASS "password"
 
-#define MQTT_NAME "sensorBedroom" // don't go much longer
-#define MQTT_CLIENT_ID MQTT_NAME
 
-#define MQTT_DISCOVER "homeassistant/sensor/sensorBedroom/config"
-#define MQTT_TOPIC "homeassistant/sensor/sensorBedroom/state"
+#define MQTT_BASE_TOPIC "homeassistant/sensor"
+#define MQTT_SENSOR_NAME "Bedroom"
+#define MQTT_CLIENT_ID MQTT_SENSOR_NAME
+
+#define MQTT_TEMPERATURE_NAME "BedroomT"
+#define MQTT_TEMPERATURE_UID MQTT_TEMPERATURE_NAME
+
+#define MQTT_HUMIDITY_NAME "BedroomH"
+#define MQTT_HUMIDITY_UID MQTT_HUMIDITY_NAME
+
 
 // turning this to false will stop rendering the temperature on this display
 // the display will still flash status messages when needed, but will be dark when not in the process of connecting

@@ -20,6 +20,8 @@ StaticJsonDocument<200> doc;
 // global vars + init
 float floatTempInC = -1;
 float previousTemp = -1;
+float floatHumidity = -1;
+float previousHumidity = -1;
 
 WifiStatus wifiStatus;
 
@@ -62,11 +64,12 @@ void setup() {
 void loop() {
     if (ensureStatus(wifiStatus) && ensureStatus(mqttStatus)) {
         floatTempInC = readTemp();
+        floatHumidity = dht.readHumidity();
         mqttClient.loop();
-        mqttPublisher.publishTemp(floatTempInC);
+        mqttPublisher.publishTemp(floatTempInC, floatHumidity);
 
-        if (DISPLAY_SHOW_TEMP) {
-            renderTemp(floatTempInC);
+        if (DISPLAY_RENDER_VALUES) {
+            renderValues(floatTempInC, floatHumidity);
         }
     }
     delay(10000);
@@ -127,7 +130,6 @@ bool ensureStatus(StatusWrapper &status) {
 float readTemp() {
     float t = dht.readTemperature();
 
-    // Check if any reads failed and exit early (to try again).
     if (isnan(t)) {
         Serial.println(F("Failed to read from DHT sensor!"));
 
@@ -140,16 +142,36 @@ float readTemp() {
 }
 
 /**
+ * read temp from dht sensor
+ * @return
+ */
+float readHumidity() {
+    float h = dht.readHumidity();
+
+    if (isnan(h)) {
+        Serial.println(F("Failed to read from DHT sensor!"));
+        h = previousHumidity;
+    }
+    previousHumidity = h;
+    return h;
+}
+
+/**
  * render temp on display
  * @param temp
  */
-void renderTemp(float temp) {
-    char strTempInC[7];
-    dtostrf(temp, 5, 2, strTempInC);
+void renderValues(float temp, float hum) {
+    char tmpString[7];
     u8g2.clearBuffer();
+    dtostrf(temp, 5, 2, tmpString);
     u8g2.drawStr(0, 10, "Temperature");
-    u8g2.drawStr(0, 20, strTempInC);
+    u8g2.drawStr(0, 20, tmpString);
     u8g2.drawStr(32, 20, "C");
+
+    dtostrf(hum, 5, 2, tmpString);
+    u8g2.drawStr(0, 30, "Humidity");
+    u8g2.drawStr(0, 40, tmpString);
+    u8g2.drawStr(32, 40, "%");
     u8g2.sendBuffer();
 }
 

@@ -17,7 +17,7 @@ public:
 
     void publishDiscovery();
 
-    void publishTemp(float temp);
+    void publishTemp(float temp, float hum);
 
 private:
     StaticJsonDocument<200> jsonDoc;

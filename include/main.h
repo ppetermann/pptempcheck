@@ -23,11 +23,9 @@
 #endif
 
 void blinkConnectionStatus(const char *service, const char *status);
-bool ensureWifi();
-bool ensureMQTT();
 bool ensureStatus(StatusWrapper &status);
 float readTemp();
-void renderTemp(float temp);
+void renderValues(float temp, float hum);
 
 
 #endif //PPTEMPCHECK_MAIN_H
